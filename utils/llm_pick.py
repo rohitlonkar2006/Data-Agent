@@ -1,4 +1,6 @@
 from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+load_dotenv()
 
 def pick_llm(level:str):
     """
@@ -10,12 +12,12 @@ def pick_llm(level:str):
     Returns:
         str: the name of the LLM to be used.
     """
-    if level.lower == "low":
-        llm = ChatGroq(model = "llama-3.1-8b-instant", temperature = 0)
+    if level.lower() == "low":
+        llm = ChatGroq(model = "openai/gpt-oss-20b", temperature = 0)
         
-    elif level.lower == "medium":
+    elif level.lower() == "medium":
         llm = ChatGroq(model = "openai/gtp-oss-120b", temperature = 0)    
-    elif level.lower == "high":
+    elif level.lower() == "high":
         llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0)
     else:
         raise ValueError(f"Unsupported level: {level}")
@@ -23,4 +25,4 @@ def pick_llm(level:str):
     return llm
 
 llm_obj = pick_llm("low")
-llm_obj.invoke("Who is modi")
+print(llm_obj.invoke("Who is modi").content)
