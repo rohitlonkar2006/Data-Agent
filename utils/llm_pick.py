@@ -25,4 +25,4 @@ def pick_llm(level:str):
     return llm
 
 llm_obj = pick_llm("low")
-print(llm_obj.invoke("Who is modi").content)
+print(llm_obj.invoke("Who is modi"))

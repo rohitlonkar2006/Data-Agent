@@ -2,3 +2,4 @@ langchain
 langchain_groq 
 langgraph
 pydantic
+dotenv
