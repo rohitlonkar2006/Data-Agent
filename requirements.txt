@@ -3,3 +3,4 @@ langchain_groq
 langgraph
 pydantic
 dotenv
+psycopg2
