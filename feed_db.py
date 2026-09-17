@@ -157,7 +157,6 @@ CREATE TABLE IF NOT EXISTS public.rating(
     CONSTRAINT chk_rating
         CHECK (rating BETWEEN 1 AND 5)
 );
-
 -- ###########################################
 -- INDEXES
 -- ###########################################
@@ -195,4 +194,17 @@ cursor.execute(create_table_sql)
 
 print("Tables Created Sucessfully")
 
+# =======================================
+# LOAD CSV USING POSTGRES COPY
+# =======================================
 
+def load_csv(table_name, csv_file, columns):
+    
+    file_path = os.path.join(CSV_DIR, csv_file)
+    
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(
+            f"CSV file not found: {file_path}"            
+        )
+        
+    
