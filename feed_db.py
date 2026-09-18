@@ -201,10 +201,25 @@ print("Tables Created Sucessfully")
 def load_csv(table_name, csv_file, columns):
     
     file_path = os.path.join(CSV_DIR, csv_file)
-    
+
     if not os.path.exists(file_path):
-        raise FileNotFoundError(
-            f"CSV file not found: {file_path}"            
+        raise FileNotFoundError(f"CSV file not found: {file_path}")
+
+    copy_sql = sql.SQL("""
+        COPY {} ({})
+        FROM STDIN
+        WITH (
+            FORMAT CSV,
+            HEADER TRUE,
+            DELIMITER ',',
+            NULL ''
         )
-        
+    """).format(
+        sql.Identifier("public", table_name),
+        sql.SQL(",").join(
+            sql.Identifier(column)
+            for column in columns
+        )
+    )
     
+
