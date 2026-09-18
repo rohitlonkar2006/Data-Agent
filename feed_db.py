@@ -1,6 +1,6 @@
 import os
-import csv
 import psycopg2
+from psycopg2 import sql
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS public.vehicles(
 -- RIDES
 -- ###########################################
 
-CREATE TABLE IF NOT EXITS public.rides(
+CREATE TABLE IF NOT EXISTS public.rides(
     ride_id INTEGER PRIMARY KEY,
     
     rider_id INTEGER NOT NULL,
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS public.payments(
         REFERENCES public.rides(ride_id), 
     
     CONSTRAINT fk_payment_user
-            FOREIGN KEY(ride_id)
+            FOREIGN KEY(user_id)
             REFERENCES public.users(user_id) 
 );
 
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS public.payments(
 -- RATINGS
 -- ###########################################
 
-CREATE TABLE IF NOT EXISTS public.rating(
+CREATE TABLE IF NOT EXISTS public.ratings(
     rating_id INTEGER PRIMARY KEY,
     
     ride_id INTEGER NOT NULL,
@@ -148,11 +148,11 @@ CREATE TABLE IF NOT EXISTS public.rating(
     
     CONSTRAINT fk_rating_rider
         FOREIGN KEY(rider_id)
-        REFERENCES public.user(user_id), 
+        REFERENCES public.users(user_id), 
 
     CONSTRAINT fk_rating_driver
         FOREIGN KEY(driver_id)
-        REFERENCES public.user(user_id), 
+        REFERENCES public.users(user_id), 
     
     CONSTRAINT chk_rating
         CHECK (rating BETWEEN 1 AND 5)
@@ -189,10 +189,24 @@ CREATE INDEX IF NOT EXISTS idx_ratings_driver_id
 ON public.ratings(driver_id);
 
 """
-
 cursor.execute(create_table_sql)
 
 print("Tables Created Sucessfully")
+
+# =======================================
+# IT IS USEFULL FOR EVERY EXECUTION 
+# TO COMPLETELY RELOAD THE CSV DATA
+# =======================================
+
+cursor.execute("""
+            TRUNCATE TABLE
+                public.ratings,
+                public.payments,
+                public.rides,
+                public.vehicles,
+                public.users
+            CASCADE;   
+               """)
 
 # =======================================
 # LOAD CSV USING POSTGRES COPY
@@ -222,4 +236,158 @@ def load_csv(table_name, csv_file, columns):
         )
     )
     
+    with open(file_path, "r", encoding = "utf-8") as file:
+        cursor.copy_expert(copy_sql, file)
+    
+    print(f"Loaded {csv_file}")
+    
 
+# ===================================================
+# LOAD USERS
+# ===================================================
+
+load_csv(
+    "users",
+    "users.csv",
+    [
+        "user_id",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "city",
+        "province",
+        "user_type",
+        "signup_date",
+        "is_active",
+    ],
+)
+
+# ===================================================
+# LOAD VEHICLES
+# ===================================================
+
+load_csv(
+    "vehicles",
+    "vehicles.csv",
+    [
+        "vehicle_id",
+        "driver_id",
+        "make",
+        "model",
+        "year",
+        "licence_plate",
+        "color",
+        "is_active",
+    ],
+)
+
+# ===================================================
+# LOAD RIDES
+# ===================================================
+
+load_csv(
+    "rides",
+    "rides.csv",
+    [
+        "ride_id",
+        "rider_id",
+        "driver_id",
+        "requested_at",
+        "pickup_time",
+        "dropoff_time",
+        "pickup_latitude",
+        "pickup_longitude",
+        "dropoff_latitude",
+        "dropoff_longitude",
+        "distance_km",
+        "fare",
+        "surge_multiplier",
+        "status",
+        "cancellation_reason",
+    ],
+)
+
+# ===================================================
+# LOAD PAYMENTS
+# ===================================================
+
+load_csv(
+    "payments",
+    "payments.csv",
+    [
+        "payment_id",
+        "ride_id",
+        "user_id",
+        "amount",
+        "payment_method",
+        "payment_status",
+        "transaction_id",
+        "payment_time",
+    ],
+)
+
+# ===================================================
+# LOAD RATINGS
+# ===================================================
+
+load_csv(
+    "ratings",
+    "ratings.csv",
+    [
+        "rating_id",
+        "ride_id",
+        "rider_id",
+        "driver_id",
+        "rating",
+        "comment",
+        "rated_at",
+    ],
+)
+
+# ===================================================
+# VEHICLES RECORD COUNTS
+# ===================================================
+
+tables = [
+    "users",
+    "vehicles",
+    "rides",
+    "payments",
+    "ratings",
+]
+
+print("\nRecord Counts:")
+print("-" * 40)
+
+for table in tables:
+    cursor.execute(
+        sql.SQL(
+            "SELECT COUNT(*) FROM {}.{}"
+        ).format(
+            sql.Identifier("public"),
+            sql.Identifier(table)
+        )
+    )
+    
+    count = cursor.fetchone()[0]
+    
+    print(f"{table:<15} {count:>10}")
+    
+# ===================================================
+# COMMIT
+# ===================================================
+
+conn.commit()
+
+print("\nData Loaded Sucessfully!")
+print("Transaction committed")
+
+# ===================================================
+# CLOSE CONNECTION
+# ===================================================
+
+cursor.close()
+conn.close()
+
+print("PostgreSQL Connection Closed")
