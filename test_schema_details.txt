@@ -1,0 +1,89 @@
+Database Schema: public
+
+Table: ratings
+ Column: driver_id, Data Type: integer
+ Column: ride_id, Data Type: integer
+ Column: rider_id, Data Type: integer
+ Column: rating_id, Data Type: integer
+ Column: rating, Data Type: integer
+ Column: rated_at, Data Type: timestamp without time zone
+ Column: comment, Data Type: text
+ Sample Data:
+   (1, 1, 8564, 427, 1, 'Good ride', datetime.datetime(2024, 5, 3, 14, 0))
+   (2, 2, 9635, 798, 5, 'Good ride', datetime.datetime(2024, 12, 2, 7, 39))
+   (3, 3, 6054, 1301, 1, 'Smooth trip', datetime.datetime(2024, 9, 21, 18, 1))
+   (4, 4, 5823, 1550, 2, 'Good ride', datetime.datetime(2025, 5, 15, 4, 6))
+   (5, 5, 7184, 611, 5, 'Good ride', datetime.datetime(2025, 6, 11, 7, 33))
+
+Table: payments
+ Column: payment_id, Data Type: integer
+ Column: ride_id, Data Type: integer
+ Column: user_id, Data Type: integer
+ Column: amount, Data Type: numeric
+ Column: payment_time, Data Type: timestamp without time zone
+ Column: payment_status, Data Type: character varying
+ Column: transaction_id, Data Type: character varying
+ Column: payment_method, Data Type: character varying
+ Sample Data:
+   (1, 1, 8564, Decimal('116.09'), 'card', 'completed', 'TXN00000001', datetime.datetime(2024, 5, 3, 14, 0))
+   (2, 2, 9635, Decimal('82.81'), 'wallet', 'refunded', 'TXN00000002', datetime.datetime(2024, 12, 2, 7, 39))
+   (3, 3, 6054, Decimal('117.58'), 'cash', 'completed', 'TXN00000003', datetime.datetime(2024, 9, 21, 18, 1))
+   (4, 4, 5823, Decimal('136.88'), 'card', 'completed', 'TXN00000004', datetime.datetime(2025, 5, 15, 4, 6))
+   (5, 5, 7184, Decimal('147.13'), 'wallet', 'completed', 'TXN00000005', datetime.datetime(2025, 6, 11, 7, 33))
+
+Table: rides
+ Column: ride_id, Data Type: integer
+ Column: rider_id, Data Type: integer
+ Column: driver_id, Data Type: integer
+ Column: requested_at, Data Type: timestamp without time zone
+ Column: pickup_time, Data Type: timestamp without time zone
+ Column: dropoff_time, Data Type: timestamp without time zone
+ Column: pickup_latitude, Data Type: numeric
+ Column: pickup_longitude, Data Type: numeric
+ Column: dropoff_latitude, Data Type: numeric
+ Column: dropoff_longitude, Data Type: numeric
+ Column: distance_km, Data Type: numeric
+ Column: fare, Data Type: numeric
+ Column: surge_multiplier, Data Type: numeric
+ Column: status, Data Type: character varying
+ Column: cancellation_reason, Data Type: character varying
+ Sample Data:
+   (1, 8564, 427, datetime.datetime(2024, 5, 3, 14, 0), datetime.datetime(2024, 5, 3, 14, 0), datetime.datetime(2024, 5, 3, 14, 0), Decimal('46.326160'), Decimal('-73.561859'), Decimal('44.587793'), Decimal('-98.430235'), Decimal('28.86'), Decimal('116.09'), Decimal('1.05'), 'completed', None)
+   (2, 9635, 798, datetime.datetime(2024, 12, 2, 7, 39), datetime.datetime(2024, 12, 2, 7, 39), None, Decimal('47.832777'), Decimal('-117.440078'), Decimal('46.868302'), Decimal('-106.813386'), Decimal('38.31'), Decimal('82.81'), Decimal('1.64'), 'cancelled', 'Rider cancelled')
+   (3, 6054, 1301, datetime.datetime(2024, 9, 21, 18, 1), datetime.datetime(2024, 9, 21, 18, 1), datetime.datetime(2024, 9, 21, 18, 1), Decimal('43.760841'), Decimal('-113.053397'), Decimal('44.916149'), Decimal('-100.844796'), Decimal('41.26'), Decimal('117.58'), Decimal('1.44'), 'completed', None)
+   (4, 5823, 1550, datetime.datetime(2025, 5, 15, 4, 6), datetime.datetime(2025, 5, 15, 4, 6), datetime.datetime(2025, 5, 15, 4, 6), Decimal('45.541534'), Decimal('-112.353197'), Decimal('46.198507'), Decimal('-107.123463'), Decimal('33.42'), Decimal('136.88'), Decimal('1.02'), 'completed', None)
+   (5, 7184, 611, datetime.datetime(2025, 6, 11, 7, 33), datetime.datetime(2025, 6, 11, 7, 33), datetime.datetime(2025, 6, 11, 7, 33), Decimal('45.986284'), Decimal('-116.006672'), Decimal('43.814775'), Decimal('-116.088960'), Decimal('7.36'), Decimal('147.13'), Decimal('2.35'), 'completed', None)
+
+Table: vehicles
+ Column: is_active, Data Type: boolean
+ Column: driver_id, Data Type: integer
+ Column: year, Data Type: integer
+ Column: vehicle_id, Data Type: integer
+ Column: color, Data Type: character varying
+ Column: licence_plate, Data Type: character varying
+ Column: make, Data Type: character varying
+ Column: model, Data Type: character varying
+ Sample Data:
+   (1, 1, 'Hyundai', 'Elantra', 2017, 'DA00001', 'Blue', False)
+   (2, 2, 'Honda', 'Elantra', 2019, 'DA00002', 'Black', True)
+   (3, 3, 'Toyota', 'Focus', 2022, 'DA00003', 'Black', True)
+   (4, 4, 'Ford', 'Focus', 2019, 'DA00004', 'Silver', True)
+   (5, 5, 'Ford', 'Focus', 2021, 'DA00005', 'Silver', True)
+
+Table: users
+ Column: user_id, Data Type: integer
+ Column: signup_date, Data Type: date
+ Column: is_active, Data Type: boolean
+ Column: email, Data Type: character varying
+ Column: phone, Data Type: character varying
+ Column: city, Data Type: character varying
+ Column: province, Data Type: character varying
+ Column: user_type, Data Type: character varying
+ Column: first_name, Data Type: character varying
+ Column: last_name, Data Type: character varying
+ Sample Data:
+   (1, 'Ava', 'Garcia', 'user1@example.com', '555-00001', 'Toronto', 'ON', 'driver', datetime.date(2024, 9, 7), True)
+   (2, 'Liam', 'Martin', 'user2@example.com', '555-00002', 'Toronto', 'ON', 'driver', datetime.date(2024, 2, 2), False)
+   (3, 'Noah', 'Smith', 'user3@example.com', '555-00003', 'Vancouver', 'BC', 'driver', datetime.date(2025, 7, 28), True)
+   (4, 'Noah', 'Clark', 'user4@example.com', '555-00004', 'Montreal', 'QC', 'driver', datetime.date(2025, 8, 26), True)
+   (5, 'Mia', 'Martin', 'user5@example.com', '555-00005', 'Toronto', 'ON', 'driver', datetime.date(2024, 12, 14), True)

@@ -20,7 +20,7 @@ class DatabaseUtil:
             
             schema_info_context = f"Database Schema: {schema_name}\n"
             
-            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = %s;", (schema_name))
+            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = %s;", (schema_name,))
             tables_list = cursor.fetchall()
             
             for table in tables_list:
@@ -28,7 +28,7 @@ class DatabaseUtil:
                 schema_info_context = f"{schema_info_context}\nTable: {table_name}\n"
                 
                 # Adding columns and Data Types
-                cursor.execute("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = %s;",(table_name))
+                cursor.execute("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = %s;",(table_name,))
                 columns_list = cursor.fetchall()
 
                 for column in columns_list:
@@ -54,3 +54,15 @@ class DatabaseUtil:
                 connection.close()
         
         return schema_info_context
+
+obj = DatabaseUtil({
+    "host":"localhost",
+    "port":5432,
+    "user":"postgres",
+    "password":"rohit",
+    "dbname":"postgres"
+})
+
+result = obj.schema_details("public")
+with open("test_schema_details.txt","w") as f:
+    f.write(result)
