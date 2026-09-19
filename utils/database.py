@@ -42,7 +42,6 @@ class DatabaseUtil:
                 schema_info_context = f"{schema_info_context} Sample Data:\n"
                 for row in sample_data:
                     schema_info_context = f"{schema_info_context}   {row}\n"
-            return schema_info_context
         
         except Exception as e:
             print(f"error fetching schema details: {e}")
@@ -53,3 +52,5 @@ class DatabaseUtil:
                 cursor.close()
             if connection:
                 connection.close()
+        
+        return schema_info_context
