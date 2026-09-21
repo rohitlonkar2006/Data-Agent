@@ -65,4 +65,4 @@ obj = DatabaseUtil({
 
 result = obj.schema_details("public")
 with open("test_schema_details.txt","w") as f:
-    
+    f.write(result)
