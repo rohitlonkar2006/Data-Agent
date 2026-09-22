@@ -53,4 +53,13 @@ def prompt_query_context(state : AgentSchema) -> AgentSchema:
     {schema_info}
     
     """
-        
+    
+    state.prompt_query_context = prompt
+    
+    llm = pick_llm("medium") 
+    
+    generated_sql_query = llm.invoke(prompt)
+    
+    state.generated_sql_query = generated_sql_query  
+    
+    return state
