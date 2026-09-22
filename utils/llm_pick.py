@@ -16,7 +16,7 @@ def pick_llm(level:str):
         llm = ChatGroq(model = "openai/gpt-oss-20b", temperature = 0)
         
     elif level.lower() == "medium":
-        llm = ChatGroq(model = "openai/gtp-oss-120b", temperature = 0)    
+        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0)    
     elif level.lower() == "high":
         llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0)
     else:
@@ -24,5 +24,6 @@ def pick_llm(level:str):
     
     return llm
 
-llm_obj = pick_llm("low")
-print(llm_obj.invoke("Who is modi"))
+if __name__ == "__main__":
+    llm_obj = pick_llm("low")
+    print(llm_obj.invoke("Who is modi"))
