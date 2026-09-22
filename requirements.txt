@@ -1,5 +1,7 @@
 langchain 
 langchain_groq 
+langchain_core 
+langchain_community 
 langgraph
 pydantic
 dotenv
