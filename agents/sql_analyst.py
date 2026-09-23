@@ -91,6 +91,22 @@ def is_safe_sql(state: AgentSchema)-> AgentSchema:
 
     response = llm_judge.invoke(prompt).model_dump()
     state.is_safe_sql_response = response['answer']
+    state.comments = response['comments']
     
     return state
-        
+    
+# Cancelled SQL Node    
+def canceled_sql(state: AgentSchema) -> AgentSchema:
+    
+    comments = state.comments
+    
+    state.final_answer = f"The Generated SQL query was deemed unsafe to execute. the reason provided by the judge is: {comments}, Therefore the SQL query will not be executed"
+    
+    return state
+
+# Execute SQL query node
+def execute_sql(state : AgentSchema) -> AgentSchema:
+    
+    sql_query = state.generated_sql_query
+    
+    conn_details = 
