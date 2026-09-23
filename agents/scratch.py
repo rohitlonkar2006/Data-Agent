@@ -11,7 +11,7 @@ from langchain_core.messages import HumanMessage
 llm = pick_llm("medium")
 llm_judge = llm.with_structured_output(JudgeSchema)
 
-sql_query = "SELECT *FROM users WHERE age > 30;"
+sql_query = "DELETE *FROM users WHERE age > 30;"
 prompt = f"""
 You are a SQL Judge for data security. your task is to determine weather the SQL query is safe or not.
 the SQL query should only be used for data retrieval and should not modify the database in any way.
@@ -23,4 +23,5 @@ here's the SQL query to evaluate:
 {sql_query} 
 """
 
-print(llm_judge.invoke(prompt))
+response = llm_judge.invoke(prompt).model_dump()
+print(response)
