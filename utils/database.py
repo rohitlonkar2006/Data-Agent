@@ -62,7 +62,7 @@ class DatabaseUtil:
             cursor.execute(query)
             result = cursor.fetchall()
             connection.commit()
-            return result
+            return str(result)
         except Exception as e:
             print(f"Error Executing Query: {e}")
             return None

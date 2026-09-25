@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 from utils.llm_pick import pick_llm
 from utils.database import DatabaseUtil
 from models.schema import AgentSchema, JudgeSchema
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 #--------------------------------------- AI Agent Code ------------------------------------
 
@@ -14,7 +14,7 @@ def curate_question(state:AgentSchema) -> AgentSchema:
 
     llm = pick_llm("low")
     
-    response = llm.invoke(f"create the following question : {user_question}")
+    response = llm.invoke(f"create the following question : {user_question}").content
     
     state.curated_question = response
     state.messages = state.messages + [HumanMessage(content = f"{response}")]
@@ -65,7 +65,7 @@ def generate_sql(state: AgentSchema) -> AgentSchema:
     
     llm = pick_llm("medium") 
         
-    generated_sql_query = llm.invoke(prompt)
+    generated_sql_query = llm.invoke(prompt).content
         
     state.generated_sql_query = generated_sql_query  
     
@@ -101,6 +101,7 @@ def canceled_sql(state: AgentSchema) -> AgentSchema:
     comments = state.comments
     
     state.final_answer = f"The Generated SQL query was deemed unsafe to execute. the reason provided by the judge is: {comments}, Therefore the SQL query will not be executed"
+    state.messages = state.messages + [AIMessage(content = f"{state.final_answer}")]
     
     return state
 
@@ -122,5 +123,31 @@ def execute_sql(state : AgentSchema) -> AgentSchema:
     execute_result = obj.execute_sql(sql_query)
     
     state.sql_query_execution_result = execution_result
+    
+    return state
+
+# Represent the final answer Node
+def represent_final_answer(state: AgentSchema) -> AgentSchema:
+    
+    execution_result = state.sql_query_execution_result
+    curated_question = state.curated_question
+    
+    llm = pick_llm("low")
+    
+    prompt = f"""
+    you are a SQL analyst agent. your task is to provide a final answer to the user based on the
+    execution result of the SQL query and the user's original question. the final answer should be
+    concise, clear, and directly address the user's query. avoid including any SQL code or technical 
+    details in the final answer. the final answer should be in a user-friendly format that is easy to
+    understand. if the execution result is empty or does not provide a clear answer to the user's question, 
+    explain this in the final answer.\n
+    here is the execution result: {execution_result} \n
+    here's the user's original question: {curated_question}
+    """
+    
+    llm_response = llm.invoke(prompt).content
+    
+    state.final_answer = llm_response
+    state.messages = state.messages + [AIMessage(content = f"{llm_response}")]
     
     return state
