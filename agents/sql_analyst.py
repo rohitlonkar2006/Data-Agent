@@ -109,4 +109,18 @@ def execute_sql(state : AgentSchema) -> AgentSchema:
     
     sql_query = state.generated_sql_query
     
-    conn_details = 
+    conn_details = {
+        "host": os.environ['host'],
+        "port": os.environ['port'],
+        "user": os.environ['user'],
+        "password": os.environ['password'],
+        "dbname": os.environ['dbname']
+    }
+    
+    obj = DatabaseUtil(conn_details)
+    
+    execute_result = obj.execute_sql(sql_query)
+    
+    state.sql_query_execution_result = execution_result
+    
+    return state
