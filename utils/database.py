@@ -12,13 +12,13 @@ class DatabaseUtil:
             self.connection = None
     def schema_details(self, schema_name):
         
+        schema_info_context = ""
+        
+        connection = self.connection
+        cursor = connection.cursor()
+        
+        schema_info_context = f"Database Schema: {schema_name}\n"
         try:
-            schema_info_context = ""
-            
-            connection = self.connection
-            cursor = connection.cursor()
-            
-            schema_info_context = f"Database Schema: {schema_name}\n"
             
             cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = %s;", (schema_name,))
             tables_list = cursor.fetchall()

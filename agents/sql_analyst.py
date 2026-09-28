@@ -173,7 +173,7 @@ sql_agent_graph.add_edge("prompt_query_context", "is_safe_sql")
 
 # Conditional Edges
 def is_safe_sql_edge(state: AgentSchema) -> AgentSchema:
-    is_safe = state.is_safe_sql
+    is_safe = state.is_safe_sql_response
     
     if is_safe.lower() == "yes":
         return "execute_sql"
@@ -181,6 +181,9 @@ def is_safe_sql_edge(state: AgentSchema) -> AgentSchema:
         return "canceled_sql"
 
 sql_agent_graph.add_conditional_edges("is_safe_sql_edge", is_safe_sql_edge)
+
+sql_agent_graph.add_conditional_edges("is_safe_sql", "execute_sql")
+sql_agent_graph.add_conditional_edges("is_safe_sql", "canceled_sql")
 
 sql_agent_graph.add_edge("canceled_sql", END)
 sql_agent_graph.add_edge("execute_sql","represent_final_answer")
@@ -191,6 +194,7 @@ final_graph = sql_agent_graph.compile()
 
 from IPython.display import display, Image
 img = Image(final_graph.get_graph().draw_mermaid_png())
-
+with open("sql_analyst.png",wb) as f:
+    f.write(img.data)
 
 
