@@ -189,3 +189,8 @@ sql_agent_graph.add_edge("represent_final_answer", END)
 # Compile The Graph
 final_graph = sql_agent_graph.compile()
 
+from IPython.display import display, Image
+img = Image(final_graph.get_graph().draw_mermaid_png())
+
+
+
