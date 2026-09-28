@@ -172,3 +172,12 @@ sql_agent_graph.add_edge("curate_question", "prompt_query_context")
 sql_agent_graph.add_edge("prompt_query_context", "is_safe_sql")
 
 # Conditional Edges
+def is_safe_sql_edge(state: AgentSchema) -> AgentSchema:
+    is_safe = state.is_safe_sql
+    
+    if is_safe.lower() == "yes":
+        return "execute_sql"
+    else:
+        return "canceled_sql"
+
+sql_agent_graph.add_conditional_edges("is_safe_sql_edge", is_safe_sql_edge)
