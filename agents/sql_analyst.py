@@ -5,6 +5,7 @@ from utils.llm_pick import pick_llm
 from utils.database import DatabaseUtil
 from models.schema import AgentSchema, JudgeSchema
 from langchain_core.messages import HumanMessage, AIMessage
+from langgraph.graph import StateGraph, START, END
 
 #--------------------------------------- AI Agent Code ------------------------------------
 
@@ -151,3 +152,23 @@ def represent_final_answer(state: AgentSchema) -> AgentSchema:
     state.messages = state.messages + [AIMessage(content = f"{llm_response}")]
     
     return state
+
+# --------------------------------------- Graph Building ---------------------------------------
+
+sql_agent_graph = StateGraph(AgentSchema)
+
+# Nodes
+sql_agent_graph.add_node("curate_question",curate_question)
+sql_agent_graph.add_node("prompt_query_context",prompt_query_context)
+sql_agent_graph.add_node("generate_sql",generate_sql)
+sql_agent_graph.add_node("is_safe_sql",is_safe_sql)
+sql_agent_graph.add_node("canceled_sql",canceled_sql)
+sql_agent_graph.add_node("execute_sql",execute_sql)
+sql_agent_graph.add_node("represent_final_answer",represent_final_answer)
+
+# Edges
+sql_agent_graph.add_edge(START, "curate_question")
+sql_agent_graph.add_edge("curate_question", "prompt_query_context")
+sql_agent_graph.add_edge("prompt_query_context", "is_safe_sql")
+
+# Conditional Edges
