@@ -31,7 +31,7 @@ def prompt_query_context(state : AgentSchema) -> AgentSchema:
         "port": os.environ['port'],
         "user": os.environ['user'],
         "password": os.environ['password'],
-        "dbname": os.environ['database'],
+           "dbname": os.environ['dbname'],
     }
     obj = DatabaseUtil(conn_details)
     
@@ -121,9 +121,9 @@ def execute_sql(state : AgentSchema) -> AgentSchema:
     
     obj = DatabaseUtil(conn_details)
     
-    execute_result = obj.execute_sql(sql_query)
+    execute_result = obj.execute_query(sql_query)
     
-    state.sql_query_execution_result = execution_result
+    state.sql_query_execution_result = execute_result
     
     return state
 
@@ -169,7 +169,8 @@ sql_agent_graph.add_node("represent_final_answer",represent_final_answer)
 # Edges
 sql_agent_graph.add_edge(START, "curate_question")
 sql_agent_graph.add_edge("curate_question", "prompt_query_context")
-sql_agent_graph.add_edge("prompt_query_context", "is_safe_sql")
+sql_agent_graph.add_edge("prompt_query_context", "generate_sql")
+sql_agent_graph.add_edge("generate_sql", "is_safe_sql")
 
 # Conditional Edges
 def is_safe_sql_edge(state: AgentSchema) -> AgentSchema:
@@ -180,10 +181,11 @@ def is_safe_sql_edge(state: AgentSchema) -> AgentSchema:
     else:
         return "canceled_sql"
 
-sql_agent_graph.add_conditional_edges("is_safe_sql_edge", is_safe_sql_edge)
-
-sql_agent_graph.add_conditional_edges("is_safe_sql", "execute_sql")
-sql_agent_graph.add_conditional_edges("is_safe_sql", "canceled_sql")
+sql_agent_graph.add_conditional_edges(
+    "is_safe_sql",
+    is_safe_sql_edge,
+    {"execute_sql": "execute_sql", "canceled_sql": "canceled_sql"},
+)
 
 sql_agent_graph.add_edge("canceled_sql", END)
 sql_agent_graph.add_edge("execute_sql","represent_final_answer")
@@ -194,7 +196,7 @@ final_graph = sql_agent_graph.compile()
 
 from IPython.display import display, Image
 img = Image(final_graph.get_graph().draw_mermaid_png())
-with open("sql_analyst.png",wb) as f:
+with open("sql_analyst.png", "wb") as f:
     f.write(img.data)
 
 
