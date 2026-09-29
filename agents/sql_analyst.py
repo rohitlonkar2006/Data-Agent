@@ -194,9 +194,8 @@ sql_agent_graph.add_edge("represent_final_answer", END)
 # Compile The Graph
 final_graph = sql_agent_graph.compile()
 
-from IPython.display import display, Image
-img = Image(final_graph.get_graph().draw_mermaid_png())
-with open("sql_analyst.png", "wb") as f:
-    f.write(img.data)
-
-
+if __name__ == "__main__":
+    from IPython.display import display, Image
+    img = Image(final_graph.get_graph().draw_mermaid_png())
+    with open("sql_analyst.png", "wb") as f:
+        f.write(img.data)
