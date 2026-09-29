@@ -203,5 +203,13 @@ if __name__ == "__main__":
     #Invoke Response
     input_schema = {
         "messages":[],
-        "user_question":"how many different type of payment method do we have in our database?"
+        "user_question":"how many different type of payment method do we have in our database?",
+        "curated_question":"",
+        "prompt_query_context":"",
+        "generated_sql_query":"",
+        "is_safe_sql_response":"",
+        "comments":"",
+        "sql_query_execution_result":"",
+        "final_answer":""
     }
+    
