@@ -199,3 +199,9 @@ if __name__ == "__main__":
     img = Image(final_graph.get_graph().draw_mermaid_png())
     with open("sql_analyst.png", "wb") as f:
         f.write(img.data)
+        
+    #Invoke Response
+    input_schema = {
+        "messages":[],
+        "user_question":"how many different type of payment method do we have in our database?"
+    }
