@@ -121,7 +121,7 @@ def execute_sql(state : AgentSchema) -> AgentSchema:
     
     obj = DatabaseUtil(conn_details)
     
-    execute_result = obj.execute_query(sql_query)
+    execute_result = obj.execute_sql(sql_query)
     
     state.sql_query_execution_result = execute_result
     
@@ -207,7 +207,7 @@ if __name__ == "__main__":
         "curated_question":"",
         "prompt_query_context":"",
         "generated_sql_query":"",
-        "is_safe_sql_response":"no",
+        "is_safe_sql_response":"No",
         "comments":"",
         "sql_query_execution_result":"",
         "final_answer":""
