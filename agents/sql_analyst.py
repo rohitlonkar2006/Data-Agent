@@ -31,7 +31,7 @@ def prompt_query_context(state : AgentSchema) -> AgentSchema:
         "port": os.environ['port'],
         "user": os.environ['user'],
         "password": os.environ['password'],
-           "dbname": os.environ['dbname'],
+           "dbname": os.environ['database'],
     }
     obj = DatabaseUtil(conn_details)
     
@@ -116,7 +116,7 @@ def execute_sql(state : AgentSchema) -> AgentSchema:
         "port": os.environ['port'],
         "user": os.environ['user'],
         "password": os.environ['password'],
-        "dbname": os.environ['dbname']
+        "dbname": os.environ['database']
     }
     
     obj = DatabaseUtil(conn_details)
@@ -207,9 +207,11 @@ if __name__ == "__main__":
         "curated_question":"",
         "prompt_query_context":"",
         "generated_sql_query":"",
-        "is_safe_sql_response":"",
+        "is_safe_sql_response":"no",
         "comments":"",
         "sql_query_execution_result":"",
         "final_answer":""
     }
     
+    #Execute The Graph
+    sql_analyst_response = final_graph.invoke(input_schema)

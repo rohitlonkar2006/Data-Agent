@@ -55,7 +55,7 @@ class DatabaseUtil:
         
         return schema_info_context
     
-    def execute_query(self, query):
+    def execute_sql(self, query):
         try:
             connection = self.connection
             cursor = connection.cursor()
