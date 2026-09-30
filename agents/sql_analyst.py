@@ -215,3 +215,17 @@ if __name__ == "__main__":
     
     #Execute The Graph
     sql_analyst_response = final_graph.invoke(input_schema)
+    print(sql_analyst_response['messages'])
+    print("***********************************")
+    
+    print(sql_analyst_response['generated_sql_query'])
+    print("***********************************")
+    
+    print(sql_analyst_response['prompt_query_context'])
+    print("***********************************")
+    
+    print(sql_analyst_response['sql_query_execution_result'])
+    print("***********************************")
+    
+    print(sql_analyst_response['final_answer'])
+    print("***********************************")
