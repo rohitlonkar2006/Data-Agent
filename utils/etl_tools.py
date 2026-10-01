@@ -45,3 +45,6 @@ class ETLTools:
         except requests.exceptions.RequestException as e:
             return f"Failed To Extract Data: {e}"
 
+if __name__ == "__main__":
+    obj = ETLTools()
+    obj.extract_load("https://pokeapi.co/api/v2/pokemon/1/", "data/extract", "csv")
