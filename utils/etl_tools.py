@@ -18,3 +18,7 @@ class ETLTools:
             str: A Message That Indicating a sucess or failure of the operation.
         """
 
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        output_folder = os.path.join(project_root, output_folder)
+        
+        
