@@ -1,0 +1,3 @@
+is_hidden,slot,ability.name,ability.url
+False,1,overgrow,https://pokeapi.co/api/v2/ability/65/
+True,3,chlorophyll,https://pokeapi.co/api/v2/ability/34/
