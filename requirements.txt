@@ -6,3 +6,4 @@ langgraph
 pydantic
 dotenv
 psycopg2
+pandas
