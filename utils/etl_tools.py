@@ -57,6 +57,7 @@ class ETLTools:
         Returns:
             str: A message indicating the sucess or failure of the operation 
         """
+        
         file_extension = os.path.splitext(file_path)[1].lower()
         if file_extension == ".csv":
             df = pd.read_csv(file_path)
@@ -66,6 +67,22 @@ class ETLTools:
             df = pd.read_parquet(file_path)
         else:
             return f"Unsupported File Format: {file_extension}"
+        
+        top_3_rows = str(df.head(3))
+        
+        return top_3_rows
+    
+    
+    def execute_code(self, code:str):
+        """
+        This tool will execute the provided code and returns the output
+        
+        Args:
+            code (str): The code to be executed 
+        
+        Returns
+            str: The output of the executed code or an error message if execution fails.
+        """
         
 if __name__ == "__main__":
     obj = ETLTools()
