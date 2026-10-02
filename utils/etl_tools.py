@@ -31,7 +31,7 @@ class ETLTools:
             filename = os.path.join(output_folder, f"extracted_data.{format}")
             os.makedirs(output_folder, exist_ok = True)
             
-            df = pd.json_normalize(data['abilities'])
+            df = pd.json_normalize(data['results'])
             if format == "csv":
                 df.to_csv(filename, index = False)
             elif format == "json":
@@ -47,4 +47,4 @@ class ETLTools:
 
 if __name__ == "__main__":
     obj = ETLTools()
-    print(obj.extract_load("https://pokeapi.co/api/v2/pokemon/1/", "data/extract", "csv"))
+    print(obj.extract_load("https://pokeapi.co/api/v2/pokemon/", "data/extract", "csv"))
