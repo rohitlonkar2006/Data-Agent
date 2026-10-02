@@ -45,6 +45,21 @@ class ETLTools:
         except requests.exceptions.RequestException as e:
             return f"Failed To Extract Data: {e}"
 
+    def transform_load_content(self, file_path:str, output_path:str, format:str):
+        """
+        This tool transform the data from the specified files and load it 
+        into the desired locations (output_folder).
+        
+        Args:
+            file_path (str): The path of the file containing the data to be transformed
+            output_path (str): the folder where the transformed data will be saved    
+            
+        Returns:
+            str: A message indicating the sucess or failure of the operation 
+        """
+        
+        
+        
 if __name__ == "__main__":
     obj = ETLTools()
     print(obj.extract_load("https://pokeapi.co/api/v2/pokemon/", "data/extract", "csv"))
