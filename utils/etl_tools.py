@@ -45,7 +45,7 @@ class ETLTools:
         except requests.exceptions.RequestException as e:
             return f"Failed To Extract Data: {e}"
 
-    def transform_load_content(self, file_path:str, output_path:str, format:str):
+    def transform_load_content(self, file_path:str, output_path:str, output_format:str):
         """
         This tool transform the data from the specified files and load it 
         into the desired locations (output_folder).
@@ -57,8 +57,15 @@ class ETLTools:
         Returns:
             str: A message indicating the sucess or failure of the operation 
         """
-        
-        
+        file_extension = os.path.splitext(file_path)[1].lower()
+        if file_extension == ".csv":
+            df = pd.read_csv(file_path)
+        elif file_extension == ".json":
+            df = pd.read_json(file_path)
+        elif file_extension == ".parquet":
+            df = pd.read_parquet(file_path)
+        else:
+            return f"Unsupported File Format: {file_extension}"
         
 if __name__ == "__main__":
     obj = ETLTools()
