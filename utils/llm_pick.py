@@ -13,12 +13,18 @@ def pick_llm(level:str):
         str: the name of the LLM to be used.
     """
     if level.lower() == "low":
-        llm = ChatGroq(model = "openai/gpt-oss-20b", temperature = 0)
+        llm = ChatGroq(model = "openai/gpt-oss-20b", temperature = 0, model_kwargs={
+            'reasoning_effort':'none'
+        })
         
     elif level.lower() == "medium":
-        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0)    
+        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0, model_kwargs={
+            'reasoning_effort':'none'
+        })    
     elif level.lower() == "high":
-        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0)
+        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0, model_kwargs={
+            'reasoning_effort':'none'
+        })
     else:
         raise ValueError(f"Unsupported level: {level}")
     
