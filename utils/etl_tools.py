@@ -83,6 +83,12 @@ class ETLTools:
         Returns
             str: The output of the executed code or an error message if execution fails.
         """
+        try:
+            exec(code)
+            return "Code Executed Sucessfully."
+        except Exception as e:
+            return f"Failed To Execute the code: {e}"
+        
         
 if __name__ == "__main__":
     obj = ETLTools()
