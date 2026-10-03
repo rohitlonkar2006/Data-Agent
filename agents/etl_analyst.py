@@ -82,5 +82,8 @@ def transform_load_tool(input_file_path:str, output_folder:str, output_format:st
     
     pandas_code = response.strip().strip('```').strip().lstrip('python').strip()
     
+    results = etl_tool.execute_code(pandas_code)
     
+    return f"The data is transformed and and saved at:{output_folder} in {output_format} format. \n\nPandas Code Executed: \n{pandas_code}. \nExecution Result: \n{results}"
+ 
     
