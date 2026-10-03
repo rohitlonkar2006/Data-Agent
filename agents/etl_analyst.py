@@ -29,7 +29,7 @@ def extract_load_tool(url:str, output_folder: str, format:str) -> str:
     return etl_tool.extract_load(url, output_folder, format)
 
 @tool
-def transform_load_tool(input_file_path:str, output_folder:str, output_format:str) -> str:
+def transform_load_tool(input_file_path:str, output_folder:str, output_format:str, user_question:str) -> str:
     """
         This tool transform the data from the specified files and load it 
         into the desired locations (output_folder).
@@ -49,14 +49,34 @@ def transform_load_tool(input_file_path:str, output_folder:str, output_format:st
     llm = pick_llm("high")
     
     prompt =f"""
-            you are a python data analyst who uses pandas to analyze data.
-            you need to provide only the pandas code that will help to perform the right ETL operations
-            as per the users question. Do not provide any explanation or comments, only
-            the code should be provided. the code should be in a format that can be executed
-            in a python enviorment with pandas installed. 
-            Don't write anything else than pandas code. \n
-            
-            
+            You are a Python data analyst who uses pandas to perform ETL operations.
+
+            Provide only valid, executable Python code using pandas. Do not provide explanations, comments, markdown, or any text outside the code.
+
+            Create a pandas DataFrame by loading the data from:
+            {input_file_path}
+
+            Use the user's question to determine the required ETL transformations.
+
+            User's question:
+            {user_question}
+
+            Data context (first 3 rows):
+            {top_3_rows}
+
+            Requirements:
+            1. Load the input file into a pandas DataFrame.
+            2. Perform the required transformations based on the user's question.
+            3. Preserve the original data unless the requested transformation requires modifying it.
+            4. Handle missing values, data types, duplicates, filtering, column transformations, aggregations, or other operations only when required by the user's question.
+            5. Save the final transformed DataFrame to {output_folder}.
+            6. Create the output folder if it does not exist.
+            7. Save the result as `transformed_data.csv`.
+            8. The code must be directly executable in a Python environment with pandas installed.
+            9. Use only pandas and Python standard-library functionality.
+            10. Do not invent columns, values, transformations, or assumptions that are not supported by the user's question or the provided data context.
+
+            Return only the Python code.
             """
                    
     
