@@ -10,7 +10,7 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 
-# ----------------------------------------------- ETL Agent ------------------------------------------
+# ----------------------------------------------- AGENT TOOLS ------------------------------------------
 
 @tool
 def extract_load_tool(url:str, output_folder: str, format:str) -> str:
@@ -85,5 +85,10 @@ def transform_load_tool(input_file_path:str, output_folder:str, output_format:st
     results = etl_tool.execute_code(pandas_code)
     
     return f"The data is transformed and and saved at:{output_folder} in {output_format} format. \n\nPandas Code Executed: \n{pandas_code}. \nExecution Result: \n{results}"
- 
-    
+
+tools = [extract_load_tool, transform_load_tool] 
+
+llm = llm_pick("high")
+llm_bind = llm.bind_tools(tools)
+
+# ----------------------------------------------- AGENT GRAPH ------------------------------------------
