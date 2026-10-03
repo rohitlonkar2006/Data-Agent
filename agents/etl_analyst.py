@@ -92,3 +92,20 @@ llm = llm_pick("high")
 llm_bind = llm.bind_tools(tools)
 
 # ----------------------------------------------- AGENT GRAPH ------------------------------------------
+
+def llm_node(state:ETLAgentSchema):
+    
+    messages = state.messages
+    
+    prompt =f"""
+                You are a Python Data Analyst who has access to tools that can extract and load,
+                transform and load data. You will be provided with the user's question 
+                and you would need to perform right ETL operation's as per the user's question.
+                If the operation is performed then inform the user and end the conversation.
+                Here's the chat history: {messages}\n
+                """
+    final_answer = llm.invoke(prompt)
+    
+    state.messages = messages + [final_answer]
+    
+    return state
