@@ -9,7 +9,7 @@ from models.schema import ETLAgentSchema
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
-
+from IPython.display import Image, display
 # ----------------------------------------------- AGENT TOOLS ------------------------------------------
 
 @tool
@@ -88,7 +88,7 @@ def transform_load_tool(input_file_path:str, output_folder:str, output_format:st
 
 tools = [extract_load_tool, transform_load_tool] 
 
-llm = llm_pick("high")
+llm = pick_llm("high")
 llm_bind = llm.bind_tools(tools)
 
 # ----------------------------------------------- AGENT GRAPH ------------------------------------------
@@ -133,3 +133,34 @@ def tool_node(state:ETLAgentSchema):
     return state
 
 # ----------------------------------------------- NODES & EDGES ------------------------------------------
+etl_analyst_graph = StateGraph(ETLAgentSchema)
+
+etl_analyst_graph.add_node("llm_node", llm_node)
+etl_analyst_graph.add_node("tool_node", tool_node)
+
+etl_analyst_graph.add_edge(START, "llm_node")
+
+def is_tool_call(state:ETLAgentSchema):
+    tool_calls = state.messages[-1].tool_calls
+    
+    if tool_calls:
+        return "tool_node"
+    else:
+        return "end"
+    
+etl_analyst_graph.add_conditional_edges(
+    "llm_node", is_tool_call, {
+        "tool_node" : "tool_node",
+        "end" : END
+    }
+)
+
+etl_analyst_graph.add_edge("tool_node", "llm_node")
+
+if __name__ == "__main__":
+    etl_analyst = etl_analyst_graph.compile()
+    
+    img = Image(etl_analyst.get_graph().draw_mermaid_png())
+    
+    with open("etl_analyst_graph.png","wb") as f:
+        f.write(img.data)
