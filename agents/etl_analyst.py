@@ -7,7 +7,7 @@ from utils.llm_pick import pick_llm
 from utils.etl_tools import ETLTools
 from models.schema import ETLAgentSchema
 from langchain.tools import tool
-from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
 from IPython.display import Image, display
 # ----------------------------------------------- AGENT TOOLS ------------------------------------------
@@ -95,20 +95,17 @@ llm_bind = llm.bind_tools(tools)
 
 def llm_node(state:ETLAgentSchema):
     
-    messages = state.messages
-    
-    prompt =f"""
-                You are a Python Data Analyst who has access to tools that can extract and load,
-                transform and load data. You will be provided with the user's question 
-                and you would need to perform right ETL operation's as per the user's question.
-                If the operation is performed then inform the user and end the conversation.
-                Here's the chat history: {messages}\n
-                """
-    final_answer = llm.invoke(prompt)
-    
-    state.messages = messages + [final_answer]
-    
-    return state
+    system_message = SystemMessage(
+        content=(
+            "You are a Python data analyst with tools to extract/load and transform/load data. "
+            "For every requested ETL operation, call the appropriate tool before reporting "
+            "that it succeeded. Base your final response on the tool result; if a tool reports "
+            "a failure, report that failure instead of claiming success."
+        )
+    )
+    final_answer = llm_bind.invoke([system_message, *state.messages])
+
+    return {"messages": [final_answer]}
 
 def tool_node(state:ETLAgentSchema):
     """
@@ -128,9 +125,7 @@ def tool_node(state:ETLAgentSchema):
         
         tools_result.append(ToolMessage(content = observation, tool_call_id = tool_call['id']))
     
-    state.messages = state.messages + tools_result
-
-    return state
+    return {"messages": tools_result}
 
 # ----------------------------------------------- NODES & EDGES ------------------------------------------
 etl_analyst_graph = StateGraph(ETLAgentSchema)
@@ -164,3 +159,8 @@ if __name__ == "__main__":
     
     with open("etl_analyst_graph.png","wb") as f:
         f.write(img.data)
+
+    response = etl_analyst.invoke(
+        {"messages":[HumanMessage(content = "I Want to extract the data from the API endpoint 'https://pokeapi.co/api/v2/pokemon'. and save it to data/extract folder in the csv format")]}
+    )
+

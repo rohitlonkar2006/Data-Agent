@@ -7,17 +7,17 @@ def pick_llm(level:str):
     Picks the appropriate LLM based on the level of the question
     
     Args:
-        level(str) : the level of the question, can be "easy","medium", or "hard".
+        level(str) : the reasoning level, can be "low", "medium", or "high".
     
     Returns:
-        str: the name of the LLM to be used.
+        ChatGroq: the LLM configured for the requested reasoning level.
     """
     if level.lower() == "low":
-        llm = ChatGroq(model = "openai/gpt-oss-20b", temperature = 0, reasoning_effort = 'none')
+        llm = ChatGroq(model = "openai/gpt-oss-20b", temperature = 0, reasoning_effort = "low")
     elif level.lower() == "medium":
-        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0, reasoning_effort = 'none')    
+        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0, reasoning_effort = "medium")
     elif level.lower() == "high":
-        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0, reasoning_effort = 'none')
+        llm = ChatGroq(model = "openai/gpt-oss-120b", temperature = 0, reasoning_effort = "high")
     else:
         raise ValueError(f"Unsupported level: {level}")
     
