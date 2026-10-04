@@ -7,7 +7,7 @@ from utils.llm_pick import pick_llm
 from utils.etl_tools import ETLTools
 from models.schema import ETLAgentSchema
 from langchain.tools import tool
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
 
 # ----------------------------------------------- AGENT TOOLS ------------------------------------------
@@ -110,3 +110,26 @@ def llm_node(state:ETLAgentSchema):
     
     return state
 
+def tool_node(state:ETLAgentSchema):
+    """
+    This node analyzes the user's question and selects the most appropriate tool based on the requirements of the query.
+    It invokes the selected tool, processes the result, and passes the information back to the agent for generating the final response.
+    """
+    tools_result = []
+    
+    tools_by_name = {tool.name: tool for tool in tools}
+    
+    tool_calls = state.messages[-1].tool_calls
+    
+    for tool_call in tool_calls:
+        
+        tool = tools_by_name[tool_call['name']]
+        observation = tool.invoke(tool_call['args'])
+        
+        tools_result.append(ToolMessage(content = observation, tool_call_id = tool_call['id']))
+    
+    state.messages = state.messages + tools_result
+
+    return state
+
+# ----------------------------------------------- NODES & EDGES ------------------------------------------
