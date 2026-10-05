@@ -44,7 +44,7 @@ def transform_load_tool(input_file_path:str, output_folder:str, output_format:st
     """
     etl_tool = ETLTools()
     
-    top_3_rows = etl_tool.transform_load_context(input_file_path, output_folder, output_format)
+    top_3_rows = etl_tool.transform_load_context(input_file_path)
     
     llm = pick_llm("high")
     
@@ -160,7 +160,16 @@ if __name__ == "__main__":
     with open("etl_analyst_graph.png","wb") as f:
         f.write(img.data)
 
+    # response = etl_analyst.invoke(
+    #     {"messages":[HumanMessage(content = "I Want to extract the data from the API endpoint 'https://pokeapi.co/api/v2/pokemon'. and save it to data/extract folder in the csv format")]}
+    # )
+    
     response = etl_analyst.invoke(
-        {"messages":[HumanMessage(content = "I Want to extract the data from the API endpoint 'https://pokeapi.co/api/v2/pokemon'. and save it to data/extract folder in the csv format")]}
+        {"messages" : [HumanMessage(content = f"""
+                I Want To Transform the data stored in the Users 'C:\\Samarth\\Desktop\\Projects\\Data-Agent\\data\\extract\\extracted_data.csv' file. and save the transformed data in the 'C:\\Users\\Samarth\\Desktop\\Projects\\Data-Agent\\data\\transform' folder in the csv format. The transformation should filter the data to show bulbasaur pokemon only.
+                                  
+                                    """)]}
     )
+    
+    print(response)
 

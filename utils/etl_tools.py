@@ -45,7 +45,7 @@ class ETLTools:
         except requests.exceptions.RequestException as e:
             return f"Failed To Extract Data: {e}"
 
-    def transform_load_content(self, file_path:str):
+    def transform_load_context(self, file_path:str):
         """
         This tool transform the data from the specified files and load it 
         into the desired locations (output_folder).
