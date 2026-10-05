@@ -19,3 +19,7 @@ class JudgeSchema(BaseModel):
     
 class ETLAgentSchema(BaseModel):
     messages : Annotated[list, add] = Field(..., description = "List of messages to be processed by the agent")
+
+class RouterSchema(BaseModel):
+    answer : Literal['sql','etl'] = Field(..., description = "Indicates Weather The User's Question is related to SQL or ETL operations")
+    comments : str = Field(..., description= "Additional comments or feedback regarding the classification of the user's question")
