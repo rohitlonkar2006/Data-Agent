@@ -1,6 +1,12 @@
 import os
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
 from utils.llm_pick import pick_llm
@@ -166,9 +172,7 @@ if __name__ == "__main__":
     
     response = etl_analyst.invoke(
         {"messages" : [HumanMessage(content = f"""
-                I Want To Transform the data stored in the Users 'C:\\Samarth\\Desktop\\Projects\\Data-Agent\\data\\extract\\extracted_data.csv' file. and save the transformed data in the 'C:\\Users\\Samarth\\Desktop\\Projects\\Data-Agent\\data\\transform' folder in the csv format. The transformation should filter the data to show bulbasaur pokemon only.
-                                  
-                                    """)]}
+        I Want To Transform the data stored in the Users 'C:\\Samarth\\Desktop\\Projects\\Data-Agent\\data\\extract\\extracted_data.csv' file. and save the transformed data in the 'C:\\Users\\Samarth\\Desktop\\Projects\\Data-Agent\\data\\transform' folder in the csv format. The transformation should filter the data to show bulbasaur pokemon only.load it in transform folder csv file please.""")]}
     )
     
     print(response)
