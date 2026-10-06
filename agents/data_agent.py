@@ -21,11 +21,21 @@ def router_node(state: DataAgentSchema):
     
     message = state.messages[-1]
     
-    route_response_dict = llm_router.invoke(message).model_dump()
+    router_prompt = SystemMessage(
+        content=(
+            "You are a request router, not a task executor. Classify the user's request "
+            "as 'etl' when it asks to extract, transform, or load data, and as 'sql' "
+            "when it asks a question about data already in the database. Do not answer "
+            "the request or generate code. Return only the RouterSchema fields."
+        )
+    )
+    route_response_dict = llm_router.invoke([router_prompt, message]).model_dump()
     
     route_response = route_response_dict['answer']
     
     state.route_response = route_response
+    
+    return state
     
 def etl_node(state:DataAgentSchema):
     messages = state.messages[-1].content
@@ -89,4 +99,9 @@ with open("data_agent_graph.png","wb") as f:
     f.write(img.data)
 
 if __name__ == "__main__":
-    pass
+    response = data_agent.invoke(
+        {"messages":[HumanMessage(content = f"extract the data from 'https://pokeapi.co/api/v2/pokemon' and load in the data/extract folder ")],
+         "route_response" : ""
+         })
+    
+    print(response)
