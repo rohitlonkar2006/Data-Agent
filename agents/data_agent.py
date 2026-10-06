@@ -36,6 +36,8 @@ def etl_node(state:DataAgentSchema):
         )
     state.messages = state.messages + [response]
     
+    return state
+    
 def sql_node(state: DataAgentSchema):
     
     messages = state.messages[-1].content
@@ -54,6 +56,37 @@ def sql_node(state: DataAgentSchema):
     response = final_graph.invoke(input_schema)
     
     state.messages = state.messages + [response]
+    
+    return state
+
+data_agent_graph = StateGraph(DataAgentSchema)
+
+data_agent_graph.add_node("router_node",router_node)
+data_agent_graph.add_node("etl_node",etl_node)
+data_agent_graph.add_node("sql_node",sql_node)
+
+data_agent_graph.add_edge(START, "router_node")
+
+def route_edge(state:DataAgentSchema) -> str:
+    if state.route_response == "sql":
+        return "sql_node"
+    elif state.route_response == "etl":
+        return "etl_node"
+    else:
+        raise ValueError(f"Invalid route response: {state.route_response}")
+
+data_agent_graph.add_conditional_edges("router_node",route_edge,{
+    "sql_node":"sql_node",
+    "etl_node":"etl_node"
+})        
+
+data_agent = data_agent_graph.compile()
+
+from IPython.display import Image, display
+
+img = Image(data_agent.get_graph().draw_mermaid_png())
+with open("data_agent_graph.png","wb") as f:
+    f.write(img.data)
 
 if __name__ == "__main__":
     pass
