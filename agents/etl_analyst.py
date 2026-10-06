@@ -157,9 +157,9 @@ etl_analyst_graph.add_conditional_edges(
 )
 
 etl_analyst_graph.add_edge("tool_node", "llm_node")
+etl_analyst = etl_analyst_graph.compile()
 
 if __name__ == "__main__":
-    etl_analyst = etl_analyst_graph.compile()
     
     img = Image(etl_analyst.get_graph().draw_mermaid_png())
     

@@ -10,7 +10,8 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
 from IPython.display import Image, display
-
+from etl_analyst import etl_analyst
+from sql_analyst import final_graph
 llm = pick_llm("high")
 
 llm_router = llm.with_structured_output(RouterSchema)
@@ -22,4 +23,37 @@ def router_node(state: DataAgentSchema):
     
     route_response_dict = llm_router.invoke(message).model_dump()
     
+    route_response = route_response_dict['answer']
     
+    state.route_response = route_response
+    
+def etl_node(state:DataAgentSchema):
+    messages = state.messages[-1].content
+    response = etl_analyst.invoke(
+            {"messages" : [HumanMessage(content = f"""
+            {messages}
+            """)]}
+        )
+    state.messages = state.messages + [response]
+    
+def sql_node(state: DataAgentSchema):
+    
+    messages = state.messages[-1].content
+    
+    input_schema = {
+            "messages":[],
+            "user_question":f"{messages}",
+            "curated_question":"",
+            "prompt_query_context":"",
+            "generated_sql_query":"",
+            "is_safe_sql_response":"No",
+            "comments":"",
+            "sql_query_execution_result":"",
+            "final_answer":""
+        }
+    response = final_graph.invoke(input_schema)
+    
+    state.messages = state.messages + [response]
+
+if __name__ == "__main__":
+    pass
