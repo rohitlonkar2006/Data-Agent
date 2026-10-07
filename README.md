@@ -1,33 +1,29 @@
 # Data Agent
 
-Data Agent is an AI-powered data assistant that routes user requests between two workflows:
-
-- SQL analysis for questions about data already stored in PostgreSQL
-- ETL analysis for extraction, transformation, and loading tasks
-
-Built with LangGraph, LangChain, Groq-hosted LLMs, and PostgreSQL, the project explores multimodal data workflows where an agent decides which path to take and executes the relevant task end-to-end.
+Data Agent is an AI-powered data assistant that routes plain-English requests between a PostgreSQL SQL workflow and an ETL workflow. It uses LangGraph, LangChain, Groq-hosted LLMs, and Python tooling to interpret, validate, and execute tasks end-to-end.
 
 > Portfolio project by [@rohitlonkar2006](https://github.com/rohitlonkar2006).
 
 ## Why This Project
 
-Many business questions require both data access and data-processing skills. This project demonstrates a lightweight data agent that:
+Business questions often require both database access and data-processing skills. This project demonstrates a lightweight data-agent workflow that can:
 
-- understands natural-language requests,
-- decides whether the task is SQL or ETL,
-- uses schemas and sample data to generate valid SQL,
-- validates unsafe SQL before execution,
-- extracts data from APIs and transforms it with pandas when needed.
+- understand natural-language requests,
+- route requests to the correct workflow,
+- generate relevant SQL for a PostgreSQL database,
+- check whether SQL is safe before execution,
+- extract data from APIs and transform it with pandas,
+- present results in a user-friendly interface.
 
 ## Features
 
+- SQL question answering against a PostgreSQL database
+- ETL workflow for API extraction and pandas transformation
 - Request routing between SQL and ETL tasks
-- SQL analyst workflow using PostgreSQL schema context
 - LLM-based SQL safety review before execution
-- Structured state validation with Pydantic
-- ETL workflow with API extraction and pandas transformation
-- Output saved to CSV/JSON-style data folders
-- Reproducible ride-share sample dataset for SQL experiments
+- Pydantic-validated state and structured agent responses
+- Streamlit-based GUI for interactive use
+- Deterministic sample data for ride-share analysis
 
 ## Architecture
 
@@ -50,14 +46,28 @@ flowchart TD
     D2 --> D3[Save output]
 ```
 
-Core implementation files:
+## Project Structure
 
-- `agents/data_agent.py` - router that decides whether to use ETL or SQL
-- `agents/sql_analyst.py` - SQL generation, safety check, execution, summarization
-- `agents/etl_analyst.py` - ETL task orchestration with tools
-- `models/schema.py` - Pydantic state schemas
-- `utils/llm_pick.py` - Groq model selection
-- `utils/database.py` - PostgreSQL schema inspection and execution utilities
+```text
+agents/
+  data_agent.py         Router that decides between SQL and ETL workflows
+  etl_analyst.py        ETL agent with extraction and transformation tools
+  sql_analyst.py        SQL workflow for query generation and execution
+models/
+  schema.py             Pydantic model definitions for agent state and routing
+utils/
+  database.py           PostgreSQL schema inspection and execution utilities
+  etl_tools.py          ETL helper functions for API extraction and pandas logic
+  llm_pick.py           Groq LLM selection by complexity level
+data/
+  extract/              Saved extracted files
+  transform/            Saved transformed outputs
+feed_db.py              PostgreSQL table creation and CSV loader
+generate_data.py        Deterministic sample-data generator
+main.py                 Streamlit GUI and app entry point
+requirements.txt        Python dependencies
+pyproject.toml          Project metadata and dependency configuration
+```
 
 ## Tech Stack
 
@@ -69,6 +79,7 @@ Core implementation files:
 | Structured validation | Pydantic |
 | Database | PostgreSQL with psycopg2 |
 | ETL | pandas |
+| UI | Streamlit |
 | Configuration | python-dotenv-compatible `.env` loading |
 
 ## Getting Started
@@ -78,6 +89,7 @@ Core implementation files:
 - Python 3.13 or later
 - PostgreSQL database available locally or on a dev server
 - Groq API key
+- Optional: a browser to use the Streamlit interface
 
 ### Installation
 
@@ -105,7 +117,7 @@ user=your_postgres_user
 password=your_postgres_password
 ```
 
-The database named in `database` must already exist. Do not commit your `.env` file or share credentials.
+The database named in `database` must already exist. Do not commit your `.env` file or share your credentials.
 
 ### Load the Ride-Share Sample Database
 
@@ -121,9 +133,26 @@ To regenerate the deterministic CSV files before loading them again:
 python generate_data.py
 ```
 
-> Warning: `feed_db.py` truncates the target tables with `CASCADE` before importing data. Only run it against a disposable development database.
+> Warning: `feed_db.py` truncates the target tables with `CASCADE` before importing data. Run it only against a disposable development database.
 
-## Running the Agent
+## Running the App
+
+Start the interactive Streamlit UI from the repository root:
+
+```powershell
+streamlit run main.py
+```
+
+The app includes:
+
+- a query box for SQL or ETL requests,
+- routing mode selection,
+- quick example prompts,
+- recent request history,
+- detailed SQL output and execution panels,
+- ETL workflow results.
+
+## Running the Agent Components Directly
 
 ### SQL workflow
 
@@ -143,22 +172,22 @@ python agents/etl_analyst.py
 
 ### Routed multi-workflow agent
 
-The router is implemented in `agents/data_agent.py` and decides whether to send a request to the SQL or ETL agent:
+The router is implemented in `agents/data_agent.py` and decides whether a request should be handled by the SQL or ETL agent:
 
 ```powershell
 python agents/data_agent.py
 ```
 
-Example natural-language requests:
+## Example Requests
 
 - "How many rides were completed last month?"
 - "What are the three most common payment methods?"
 - "Extract data from https://pokeapi.co/api/v2/pokemon and save it in data/extract"
-- "Transform the extracted data to show only Bulbasaur rows and save the output"
+- "Transform the extracted data to show only Bulbasaur rows and save it in data/transform"
 
 ## Sample Dataset
 
-The project includes a deterministic synthetic ride-share dataset that mirrors a realistic relational schema.
+The project includes a deterministic synthetic ride-share dataset designed to mirror a realistic relational schema.
 
 | Table | Approx. rows | Contents |
 | --- | ---: | --- |
@@ -168,7 +197,7 @@ The project includes a deterministic synthetic ride-share dataset that mirrors a
 | `payments` | 16,000 | Payment methods and transaction records |
 | `ratings` | 12,000 | Ride ratings and comments |
 
-`generate_data.py` uses a fixed random seed to make regenerated data repeatable.
+`generate_data.py` uses a fixed random seed to make regenerated sample data repeatable.
 
 ## Security Notes
 
@@ -177,31 +206,8 @@ The project includes a deterministic synthetic ride-share dataset that mirrors a
 - Do not connect the project to sensitive or production data.
 - Keep Groq and database credentials in local environment configuration and do not commit secrets.
 
-## Project Structure
-
-```text
-agents/
-  data_agent.py         Router that decides between ETL and SQL workflows
-  etl_analyst.py        ETL agent with extraction and transformation tools
-  sql_analyst.py        SQL agent for question-to-query and execution
-models/
-  schema.py             Pydantic schemas for graph state and validation
-utils/
-  database.py           PostgreSQL utilities for schema inspection and execution
-  etl_tools.py          ETL helper functions for API extraction and pandas ops
-  llm_pick.py           Groq LLM configuration by complexity level
-data/
-  extract/              API extraction outputs
-  transform/            Transformed data outputs
-feed_db.py              PostgreSQL table creation and CSV loader
-generate_data.py        Deterministic sample-data generator
-main.py                 Project entry stub
-requirements.txt        Python dependencies
-pyproject.toml          Project metadata and dependency config
-```
-
 ## Maintainer
 
 [@rohitlonkar2006 on GitHub](https://github.com/rohitlonkar2006)
 
-No explicit license is currently specified for this repository.
+This project is provided for learning and portfolio use. No explicit license is currently specified for this repository.
