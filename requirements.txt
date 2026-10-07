@@ -7,3 +7,5 @@ pydantic
 dotenv
 psycopg2
 pandas
+requests
+streamlit

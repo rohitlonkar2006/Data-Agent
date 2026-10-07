@@ -10,8 +10,8 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
 from IPython.display import Image, display
-from etl_analyst import etl_analyst
-from sql_analyst import final_graph
+from agents.etl_analyst import etl_analyst
+from agents.sql_analyst import final_graph
 llm = pick_llm("high")
 
 llm_router = llm.with_structured_output(RouterSchema)

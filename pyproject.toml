@@ -16,4 +16,6 @@ dependencies = [
     "psycopg2>=2.9.13",
     "psycopg2-binary>=2.9.13",
     "pydantic>=2.13.5",
+    "requests>=2.32.3",
+    "streamlit>=1.39.0",
 ]
