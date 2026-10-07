@@ -1,36 +1,63 @@
 # Data Agent
 
-**Ask questions about ride-share data in plain English and get database-backed answers.** Data Agent is a Python proof of concept that uses LangGraph, Groq-hosted language models, and PostgreSQL to turn a natural-language question into SQL, review the proposed query, execute it, and summarize the result.
+Data Agent is an AI-powered data assistant that routes user requests between two workflows:
 
-> Portfolio project by [@rohitlonkar2006](https://github.com/rohitlonkar2006). Built to explore LLM orchestration, structured model output, and natural-language access to relational data.
+- SQL analysis for questions about data already stored in PostgreSQL
+- ETL analysis for extraction, transformation, and loading tasks
+
+Built with LangGraph, LangChain, Groq-hosted LLMs, and PostgreSQL, the project explores multimodal data workflows where an agent decides which path to take and executes the relevant task end-to-end.
+
+> Portfolio project by [@rohitlonkar2006](https://github.com/rohitlonkar2006).
 
 ## Why This Project
 
-Business questions often require someone to know a database schema and write SQL. This project explores a conversational interface for querying a sample ride-share database, while making the query-generation and review steps explicit in a graph workflow.
+Many business questions require both data access and data-processing skills. This project demonstrates a lightweight data agent that:
+
+- understands natural-language requests,
+- decides whether the task is SQL or ETL,
+- uses schemas and sample data to generate valid SQL,
+- validates unsafe SQL before execution,
+- extracts data from APIs and transforms it with pandas when needed.
 
 ## Features
 
-- Natural-language question curation and SQL generation
-- PostgreSQL schema and sample-row context supplied to the SQL-generation step
-- Structured safety-review output validated with Pydantic
-- Separate graph paths for approved and rejected queries
-- Natural-language summaries of query results
-- Reproducible CSV data for a realistic, relational ride-share example
+- Request routing between SQL and ETL tasks
+- SQL analyst workflow using PostgreSQL schema context
+- LLM-based SQL safety review before execution
+- Structured state validation with Pydantic
+- ETL workflow with API extraction and pandas transformation
+- Output saved to CSV/JSON-style data folders
+- Reproducible ride-share sample dataset for SQL experiments
 
-## Workflow
+## Architecture
 
 ```mermaid
-flowchart LR
-	 A[Question] --> B[Curate question]
-	 B --> C[Read schema and sample rows]
-	 C --> D[Generate SQL]
-	 D --> E{LLM review}
-	 E -->|Approved| F[Execute SQL]
-	 E -->|Rejected| G[Explain rejection]
-	 F --> H[Summarize results]
+flowchart TD
+    A[User request] --> B[Router agent]
+    B --> C[SQL Analyst]
+    B --> D[ETL Analyst]
+
+    C --> C1[Curate question]
+    C1 --> C2[Load schema context]
+    C2 --> C3[Generate SQL]
+    C3 --> C4[Safety review]
+    C4 -->|Approved| C5[Execute SQL]
+    C4 -->|Rejected| C6[Return rejection reason]
+    C5 --> C7[Summarize results]
+
+    D --> D1[Extract data from API]
+    D1 --> D2[Transform with pandas]
+    D2 --> D3[Save output]
 ```
 
-The graph is implemented in `agents/sql_analyst.py`. Its state and the review response are defined in `models/schema.py`; `utils/llm_pick.py` configures the Groq models.
+Core implementation files:
+
+- `agents/data_agent.py` - router that decides whether to use ETL or SQL
+- `agents/sql_analyst.py` - SQL generation, safety check, execution, summarization
+- `agents/etl_analyst.py` - ETL task orchestration with tools
+- `models/schema.py` - Pydantic state schemas
+- `utils/llm_pick.py` - Groq model selection
+- `utils/database.py` - PostgreSQL schema inspection and execution utilities
 
 ## Tech Stack
 
@@ -38,9 +65,10 @@ The graph is implemented in `agents/sql_analyst.py`. Its state and the review re
 | --- | --- |
 | Language | Python 3.13+ |
 | Workflow orchestration | LangGraph |
-| LLM integration | LangChain and ChatGroq |
+| LLM integration | LangChain + ChatGroq |
 | Structured validation | Pydantic |
 | Database | PostgreSQL with psycopg2 |
+| ETL | pandas |
 | Configuration | python-dotenv-compatible `.env` loading |
 
 ## Getting Started
@@ -48,12 +76,12 @@ The graph is implemented in `agents/sql_analyst.py`. Its state and the review re
 ### Prerequisites
 
 - Python 3.13 or later
-- PostgreSQL and a database you can use for this project
-- A Groq API key
+- PostgreSQL database available locally or on a dev server
+- Groq API key
 
 ### Installation
 
-Create and activate a virtual environment from the repository root:
+From the repository root, create and activate a virtual environment:
 
 ```powershell
 python -m venv .venv
@@ -66,7 +94,7 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Create a `.env` file in the repository root:
+Create a `.env` file in the project root:
 
 ```dotenv
 GROQ_API_KEY=your_groq_api_key
@@ -77,63 +105,60 @@ user=your_postgres_user
 password=your_postgres_password
 ```
 
-The database specified by `database` must already exist. Do not commit `.env` or share its credentials.
+The database named in `database` must already exist. Do not commit your `.env` file or share credentials.
 
-### Load the Sample Database
+### Load the Ride-Share Sample Database
 
-The sample CSV files are included in `data/`. From the repository root, create the tables and import the data with:
+The sample CSV files are stored in `data/`. To create the tables and load the data:
 
 ```powershell
 python feed_db.py
 ```
 
-To regenerate the deterministic CSV files first, run:
+To regenerate the deterministic CSV files before loading them again:
 
 ```powershell
 python generate_data.py
 ```
 
-> **Warning:** `feed_db.py` truncates the project's five tables with `CASCADE` before loading the CSVs. Use a disposable development database, not a database containing data you need.
+> Warning: `feed_db.py` truncates the target tables with `CASCADE` before importing data. Only run it against a disposable development database.
 
-## Ask a Question
+## Running the Agent
 
-The current runnable example is at the bottom of `agents/sql_analyst.py`. Change its `user_question` value and run:
+### SQL workflow
+
+The SQL example run is defined near the bottom of `agents/sql_analyst.py`:
 
 ```powershell
 python agents/sql_analyst.py
 ```
 
-To invoke the graph from another Python script, provide all fields required by `AgentSchema` and read the final answer from the returned state:
+### ETL workflow
 
-```python
-from agents.sql_analyst import final_graph
+The ETL example run is defined near the bottom of `agents/etl_analyst.py`:
 
-result = final_graph.invoke(
-	 {
-		  "messages": [],
-		  "user_question": "How many payment methods are in the database?",
-		  "curated_question": "",
-		  "prompt_query_context": "",
-		  "generated_sql_query": "",
-		  "is_safe_sql_response": "No",
-		  "comments": "",
-		  "sql_query_execution_result": "",
-		  "final_answer": "",
-	 }
-)
-
-print(result["final_answer"])
+```powershell
+python agents/etl_analyst.py
 ```
 
-The initial safety value must be exactly `Yes` or `No`, including capitalization. It is replaced by the safety-review node during execution.
+### Routed multi-workflow agent
 
-Example questions:
+The router is implemented in `agents/data_agent.py` and decides whether to send a request to the SQL or ETL agent:
 
-- How many rides were completed last month?
-- What are the three most common payment methods?
-- What is the average rating for each driver?
+```powershell
+python agents/data_agent.py
+```
+
+Example natural-language requests:
+
+- "How many rides were completed last month?"
+- "What are the three most common payment methods?"
+- "Extract data from https://pokeapi.co/api/v2/pokemon and save it in data/extract"
+- "Transform the extracted data to show only Bulbasaur rows and save the output"
 
 ## Sample Dataset
+
+The project includes a deterministic synthetic ride-share dataset that mirrors a realistic relational schema.
 
 | Table | Approx. rows | Contents |
 | --- | ---: | --- |
@@ -143,47 +168,40 @@ Example questions:
 | `payments` | 16,000 | Payment methods and transaction records |
 | `ratings` | 12,000 | Ride ratings and comments |
 
-`generate_data.py` uses a fixed random seed, making regenerated sample data repeatable.
+`generate_data.py` uses a fixed random seed to make regenerated data repeatable.
 
-## Engineering Notes
+## Security Notes
 
-- **Graph-based orchestration:** curation, schema grounding, SQL generation, review, execution, and answer generation are distinct nodes.
-- **Typed state:** Pydantic models define the state passed through the workflow and constrain the judge's answer to `Yes` or `No`.
-- **Separate review outcomes:** the graph routes a rejected query to a response explaining why it was rejected, rather than executing it.
-- **Local reproducible data:** the project includes a generator and PostgreSQL loader so the workflow can be explored without a real ride-share dataset.
-
-## Limitations and Next Steps
-
-This is a learning and portfolio project, not a production-ready database agent. The safety decision is made by an LLM and is not a security boundary. The repository currently has no automated test suite or interactive web interface; the example question is configured in the Python script.
-
-Potential next steps:
-
-- Add automated tests for graph routing, schema handling, and query execution.
-- Add deterministic SQL validation and enforce read-only database permissions.
-- Add a command-line interface for entering questions without editing source code.
-- Add structured logging and clearer error handling for model and database failures.
-
-## Security
-
-- Use a dedicated PostgreSQL account with read-only permissions when running the agent. An LLM review can miss unsafe SQL.
-- Do not connect this proof of concept to sensitive or production data.
-- Keep Groq and database credentials in local environment configuration; never commit secrets.
-- Run `feed_db.py` only against a disposable development database because it deletes existing rows from its target tables.
+- Use a dedicated PostgreSQL user with read-only permissions when possible.
+- Treat the LLM safety review as a helpful check, not a security boundary.
+- Do not connect the project to sensitive or production data.
+- Keep Groq and database credentials in local environment configuration and do not commit secrets.
 
 ## Project Structure
 
 ```text
-agents/sql_analyst.py   LangGraph text-to-SQL workflow
-models/schema.py        Pydantic graph state and judge schemas
-utils/llm_pick.py       Groq model configuration
-utils/database.py      PostgreSQL schema inspection utilities
-generate_data.py        Deterministic sample-data generator
+agents/
+  data_agent.py         Router that decides between ETL and SQL workflows
+  etl_analyst.py        ETL agent with extraction and transformation tools
+  sql_analyst.py        SQL agent for question-to-query and execution
+models/
+  schema.py             Pydantic schemas for graph state and validation
+utils/
+  database.py           PostgreSQL utilities for schema inspection and execution
+  etl_tools.py          ETL helper functions for API extraction and pandas ops
+  llm_pick.py           Groq LLM configuration by complexity level
+data/
+  extract/              API extraction outputs
+  transform/            Transformed data outputs
 feed_db.py              PostgreSQL table creation and CSV loader
-data/                   Ride-share CSV dataset
+generate_data.py        Deterministic sample-data generator
+main.py                 Project entry stub
+requirements.txt        Python dependencies
+pyproject.toml          Project metadata and dependency config
 ```
 
 ## Maintainer
 
 [@rohitlonkar2006 on GitHub](https://github.com/rohitlonkar2006)
 
-No license is currently specified in this repository.
+No explicit license is currently specified for this repository.
